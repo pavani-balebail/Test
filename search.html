@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #searchInput:focus {
+            border-color: #667eea;
+        }
+
+        #searchButton {
+            padding: 15px 30px;
+            font-size: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+
+        #searchButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        #searchButton:active {
+            transform: translateY(0);
+        }
+
+        .results-container {
+            display: none;
+        }
+
+        .results-container.visible {
+            display: block;
+        }
+
+        .results-header {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .result-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-title {
+            color: #333;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .result-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-size: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            padding: 20px;
+            font-size: 16px;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Search</h1>
+        
+        <div id="errorMessage" class="error-message"></div>
+        
+        <div class="search-box">
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="Enter your search term..."
+                autocomplete="off"
+            />
+            <button id="searchButton">Search</button>
+        </div>
+
+        <div id="resultsContainer" class="results-container">
+            <div class="results-header" id="resultsHeader"></div>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data generator
+        function generateMockData(searchTerm) {
+            const topics = [
+                'Technology', 'Science', 'Business', 'Health', 
+                'Education', 'Travel', 'Food', 'Sports', 'Music', 'Art'
+            ];
+            
+            const descriptions = [
+                `Comprehensive guide about ${searchTerm} covering all essential aspects and best practices.`,
+                `Latest trends and developments in ${searchTerm} that you need to know about.`,
+                `How to master ${searchTerm}: A step-by-step approach for beginners and experts.`,
+                `${searchTerm} explained: Everything you need to understand this topic.`,
+                `Top 10 tips for ${searchTerm} that will improve your knowledge and skills.`,
+                `The ultimate resource for ${searchTerm} with practical examples and use cases.`,
+                `Understanding ${searchTerm}: An in-depth analysis and expert insights.`,
+                `${searchTerm} fundamentals: Building a strong foundation in this area.`
+            ];
+
+            const results = [];
+            const numberOfResults = Math.floor(Math.random() * 5) + 3; // 3-7 results
+
+            for (let i = 0; i < numberOfResults; i++) {
+                const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+                const randomDesc = descriptions[Math.floor(Math.random() * descriptions.length)];
+                
+                results.push({
+                    title: `${randomTopic}: ${searchTerm} - Result ${i + 1}`,
+                    description: randomDesc
+                });
+            }
+
+            return results;
+        }
+
+        // HTML escape function to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Display results
+        function displayResults(results, searchTerm) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsHeader = document.getElementById('resultsHeader');
+            const resultsContent = document.getElementById('resultsContent');
+
+            if (results.length === 0) {
+                resultsHeader.textContent = 'No results found';
+                const noResultsDiv = document.createElement('div');
+                noResultsDiv.className = 'no-results';
+                noResultsDiv.textContent = 'Try searching for something else...';
+                resultsContent.innerHTML = '';
+                resultsContent.appendChild(noResultsDiv);
+            } else {
+                resultsHeader.textContent = `Found ${results.length} results for "${searchTerm}"`;
+                
+                // Use escapeHtml to prevent XSS
+                resultsContent.innerHTML = results.map(result => `
+                    <div class="result-item">
+                        <div class="result-title">${escapeHtml(result.title)}</div>
+                        <div class="result-description">${escapeHtml(result.description)}</div>
+                    </div>
+                `).join('');
+            }
+
+            resultsContainer.classList.add('visible');
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('visible');
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                errorDiv.classList.remove('visible');
+            }, 3000);
+        }
+
+        // Perform search
+        function performSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput.value.trim();
+
+            if (!searchTerm) {
+                showError('Please enter a search term');
+                return;
+            }
+
+            // Show loading state
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsContent = document.getElementById('resultsContent');
+            resultsContainer.classList.add('visible');
+            resultsContent.innerHTML = '<div class="loading">Searching...</div>';
+
+            // Simulate API delay
+            setTimeout(() => {
+                const mockResults = generateMockData(searchTerm);
+                displayResults(mockResults, searchTerm);
+            }, 500);
+        }
+
+        // Event listeners
+        document.getElementById('searchButton').addEventListener('click', performSearch);
+        
+        document.getElementById('searchInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Focus on input when page loads
+        window.addEventListener('load', function() {
+            document.getElementById('searchInput').focus();
+        });
+    </script>
+</body>
+</html>
