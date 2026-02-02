@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .search-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #searchInput {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+            transition: border-color 0.3s;
+        }
+        
+        #searchInput:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        #searchButton {
+            padding: 12px 30px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        #searchButton:hover {
+            background-color: #45a049;
+        }
+        
+        #searchButton:active {
+            background-color: #3d8b40;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <h1>Search</h1>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Enter search term..." aria-label="Search">
+            <button type="button" id="searchButton">Search</button>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('searchButton').addEventListener('click', function() {
+            const searchTerm = document.getElementById('searchInput').value;
+            if (searchTerm.trim() !== '') {
+                alert('Searching for: ' + searchTerm);
+            } else {
+                alert('Please enter a search term');
+            }
+        });
+        
+        document.getElementById('searchInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                document.getElementById('searchButton').click();
+            }
+        });
+    </script>
+</body>
+</html>
