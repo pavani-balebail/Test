@@ -132,11 +132,27 @@
             padding: 20px;
             font-size: 16px;
         }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🔍 Search</h1>
+        
+        <div id="errorMessage" class="error-message"></div>
         
         <div class="search-box">
             <input 
@@ -189,6 +205,13 @@
             return results;
         }
 
+        // HTML escape function to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Display results
         function displayResults(results, searchTerm) {
             const resultsContainer = document.getElementById('resultsContainer');
@@ -197,19 +220,36 @@
 
             if (results.length === 0) {
                 resultsHeader.textContent = 'No results found';
-                resultsContent.innerHTML = '<div class="no-results">Try searching for something else...</div>';
+                const noResultsDiv = document.createElement('div');
+                noResultsDiv.className = 'no-results';
+                noResultsDiv.textContent = 'Try searching for something else...';
+                resultsContent.innerHTML = '';
+                resultsContent.appendChild(noResultsDiv);
             } else {
                 resultsHeader.textContent = `Found ${results.length} results for "${searchTerm}"`;
                 
+                // Use escapeHtml to prevent XSS
                 resultsContent.innerHTML = results.map(result => `
                     <div class="result-item">
-                        <div class="result-title">${result.title}</div>
-                        <div class="result-description">${result.description}</div>
+                        <div class="result-title">${escapeHtml(result.title)}</div>
+                        <div class="result-description">${escapeHtml(result.description)}</div>
                     </div>
                 `).join('');
             }
 
             resultsContainer.classList.add('visible');
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('visible');
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                errorDiv.classList.remove('visible');
+            }, 3000);
         }
 
         // Perform search
@@ -218,7 +258,7 @@
             const searchTerm = searchInput.value.trim();
 
             if (!searchTerm) {
-                alert('Please enter a search term');
+                showError('Please enter a search term');
                 return;
             }
 
